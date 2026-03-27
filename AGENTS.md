@@ -38,6 +38,25 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - Over time, review your daily files and update MEMORY.md with what's worth keeping
 - Promote only stable facts to `MEMORY.md`; keep implementation details and day-specific work in `memory/YYYY-MM-DD.md`
 
+### Crash/Restart Continuation Rule
+
+- If a task is interrupted by a restart, timeout, crash, tool disconnect, or partial failure, resume from the exact last unfinished step automatically
+- Do not treat interruption as task completion
+- After reconnect, continue the task first, then send a status update
+
+### Persistence Rule
+
+- Stay on the requested implementation/debugging task until it is fully completed, explicitly paused, or blocked by a true approval boundary
+- Do not fall back into chat mode while implementation work is still unfinished
+- If a coding step fails, continue with the next recovery/debug step automatically
+
+### Senior Engineer Workflow Rule
+
+- Treat implementation requests like production work: inspect, edit, build, verify, and continue until the result is working
+- Prefer fixing root causes over cosmetic patches
+- After each state change (edit/build/restart/verify), immediately continue to the next required step unless the task is already complete
+- Use concise status updates, but do not wait for the user to prompt you before continuing
+
 ### 📝 Write It Down - No "Mental Notes"!
 
 - **Memory is limited** — if you want to remember something, WRITE IT TO A FILE
