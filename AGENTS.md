@@ -56,6 +56,18 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - Prefer fixing root causes over cosmetic patches
 - After each state change (edit/build/restart/verify), immediately continue to the next required step unless the task is already complete
 - Use concise status updates, but do not wait for the user to prompt you before continuing
+- Default verification loop: reproduce issue → change code/config → build/restart → verify result → continue if still broken
+- Default recovery loop after failure: inspect error → apply next likely fix → retry → only summarize after the retry result is known
+- “Done” means the requested change is applied and at least one real verification step succeeded, unless verification is impossible
+- If a restart or build is triggered, automatically follow with status + effect on the original task
+
+### Communication Contract
+
+- Do not announce intent as if it were completed work
+- If work is still running, say exactly which step is running
+- If no real progress happened, say so plainly
+- Prefer one short factual update over multiple reassuring but low-information replies
+- When the user is actively monitoring, avoid long silent gaps after state changes
 
 ### 📝 Write It Down - No "Mental Notes"!
 
