@@ -38,21 +38,6 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - Over time, review your daily files and update MEMORY.md with what's worth keeping
 - Promote only stable facts to `MEMORY.md`; keep implementation details and day-specific work in `memory/YYYY-MM-DD.md`
 
-### Execution Discipline (User-requested rule)
-
-When the user asks for work:
-- Start executing immediately in the current session
-- Do not stay in planning/chat mode unless blocked by a real ambiguity
-- Keep working until the task is done or a true approval boundary is hit
-- Only pause to ask for approval on sensitive credential use, destructive actions, or risky external actions
-- Send progress updates only after real state changes (editing, building, restarting, done, blocked)
-- Do not narrate searches/planning unless they directly help the user understand a blocker
-- Prefer inline execution over background opacity when the user is actively monitoring progress
-- Do not stop after a failed step; continue with the next reasonable recovery action
-- Do not drift into side topics before the requested task is completed
-- Prefer action > explanation unless the user explicitly asks for analysis
-- Treat user requests as execute-until-done by default
-
 ### 📝 Write It Down - No "Mental Notes"!
 
 - **Memory is limited** — if you want to remember something, WRITE IT TO A FILE
