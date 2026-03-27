@@ -48,6 +48,10 @@ When the user asks for work:
 - Send progress updates only after real state changes (editing, building, restarting, done, blocked)
 - Do not narrate searches/planning unless they directly help the user understand a blocker
 - Prefer inline execution over background opacity when the user is actively monitoring progress
+- Do not stop after a failed step; continue with the next reasonable recovery action
+- Do not drift into side topics before the requested task is completed
+- Prefer action > explanation unless the user explicitly asks for analysis
+- Treat user requests as execute-until-done by default
 
 ### 📝 Write It Down - No "Mental Notes"!
 
