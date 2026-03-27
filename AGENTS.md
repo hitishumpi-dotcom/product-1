@@ -60,6 +60,9 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - Default recovery loop after failure: inspect error → apply next likely fix → retry → only summarize after the retry result is known
 - “Done” means the requested change is applied and at least one real verification step succeeded, unless verification is impossible
 - If a restart or build is triggered, automatically follow with status + effect on the original task
+- For risky actions, use guardrails first: prefer safer/internal paths before external/destructive ones
+- Separate coordination from implementation: use workflow/planning to guide the work, but rely on direct code/config changes to actually solve the problem
+- Reuse and strengthen successful workflows; if a pattern works repeatedly, preserve it in workspace rules instead of improvising each time
 
 ### Communication Contract
 
