@@ -12,6 +12,7 @@ async function runScheduler() {
   const config = loadConfig();
   const status = loadStatus();
   status.schedulerRunning = true;
+  status.schedulerPid = process.pid;
   saveStatus(status);
 
   const loop = async () => {
@@ -32,6 +33,8 @@ if (mode === 'run-once') {
   runOnce();
 } else if (mode === 'scheduler') {
   runScheduler();
+} else if (mode === 'check-updates') {
+  console.log(JSON.stringify(checkForUpdates(), null, 2));
 } else {
-  console.log('Usage: node src/runner.js [run-once|scheduler]');
+  console.log('Usage: node src/runner.js [run-once|scheduler|check-updates]');
 }

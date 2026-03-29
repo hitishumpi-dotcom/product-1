@@ -1,10 +1,12 @@
 const { loadConfig, saveConfig, loadStatus, saveStatus } = require('./config');
+const { readLocalVersion } = require('./version');
 
 function checkForUpdates() {
   const config = loadConfig();
   const status = loadStatus();
-  const latestVersion = config.update.latestVersion || config.version || '0.1.0';
-  const currentVersion = config.update.currentVersion || config.version || '0.1.0';
+  const local = readLocalVersion();
+  const latestVersion = config.update.latestVersion || local.version || '0.1.0';
+  const currentVersion = config.update.currentVersion || local.version || '0.1.0';
   const updateAvailable = latestVersion !== currentVersion;
 
   config.update.currentVersion = currentVersion;

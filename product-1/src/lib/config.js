@@ -6,6 +6,7 @@ const DATA_DIR = path.join(ROOT, 'data');
 const CONFIG_PATH = path.join(DATA_DIR, 'config.json');
 const STATUS_PATH = path.join(DATA_DIR, 'status.json');
 const COOKIE_PATH = path.join(DATA_DIR, 'l2reborn-cookies.json');
+const PID_PATH = path.join(DATA_DIR, 'scheduler.pid');
 
 function ensureDataDir() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -72,6 +73,7 @@ function loadStatus() {
       lastSummary: 'Not run yet',
       consecutiveFailures: 0,
       schedulerRunning: false,
+      schedulerPid: null,
       update: {
         currentVersion: '0.1.0',
         latestVersion: '0.1.0',
@@ -94,6 +96,7 @@ module.exports = {
   CONFIG_PATH,
   STATUS_PATH,
   COOKIE_PATH,
+  PID_PATH,
   defaultConfig,
   loadConfig,
   saveConfig,

@@ -8,7 +8,9 @@
     "start": "node src/server.js",
     "dev": "node src/server.js",
     "vote:run": "node src/runner.js run-once",
-    "scheduler": "node src/runner.js scheduler"
+    "scheduler": "node src/runner.js scheduler",
+    "scheduler:start": "node src/runner.js scheduler",
+    "check:update": "node src/runner.js check-updates"
   },
   "dependencies": {
     "express": "^4.21.2",
