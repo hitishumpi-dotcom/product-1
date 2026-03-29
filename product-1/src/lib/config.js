@@ -20,7 +20,8 @@ function defaultConfig() {
       currentVersion: '0.1.0',
       latestVersion: '0.1.0',
       updateAvailable: false,
-      channel: 'manual'
+      channel: 'manual',
+      remoteManifestPath: ''
     },
     schedule: {
       enabled: false,
@@ -42,7 +43,7 @@ function defaultConfig() {
     },
     notifications: {
       enabled: false,
-      channel: '',
+      channel: 'log',
       target: ''
     }
   };

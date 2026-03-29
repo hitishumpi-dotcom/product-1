@@ -5,6 +5,7 @@ const path = require('path');
 const https = require('https');
 const { loadConfig, loadStatus, saveStatus, COOKIE_PATH } = require('./config');
 const { validateConfig } = require('./validate');
+const { notify } = require('./notify');
 
 function httpGet(url) {
   return new Promise((resolve, reject) => {
@@ -230,6 +231,7 @@ async function runVoteOnce() {
     status.lastSummary = result.summary;
     status.consecutiveFailures = ok ? 0 : (status.consecutiveFailures || 0) + 1;
     saveStatus(status);
+    if (config.notifications && config.notifications.enabled) notify(result);
     return result;
   } catch (error) {
     const result = {
@@ -243,6 +245,7 @@ async function runVoteOnce() {
     status.lastSummary = result.summary;
     status.consecutiveFailures = (status.consecutiveFailures || 0) + 1;
     saveStatus(status);
+    if (config.notifications && config.notifications.enabled) notify(result);
     return result;
   } finally {
     await browser.close();
