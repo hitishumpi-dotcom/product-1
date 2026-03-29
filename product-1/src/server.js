@@ -9,6 +9,9 @@ const { writeServiceFile } = require('./lib/service');
 const { buildBundle } = require('./lib/bundle');
 const { LOG_PATH } = require('./lib/notify');
 const { applyUpdateFromManifestUrl, rollbackFromBackup } = require('./lib/update-apply');
+const { FIELD_HELP } = require('./lib/help');
+const { wizardState } = require('./lib/wizard');
+const { discoveryHints } = require('./lib/discovery');
 const fs = require('fs');
 const path = require('path');
 
@@ -38,10 +41,15 @@ function listBackups() {
     .reverse();
 }
 
+function helpText(key) {
+  return FIELD_HELP[key] || '';
+}
+
 function page(config, status, scheduler) {
   const u = status.update || {};
   const validation = validateConfig(config);
-  const setupDone = validation.ok;
+  const wizard = wizardState(config);
+  const hints = discoveryHints(config);
   const backups = listBackups();
   return `<!doctype html>
 <html>
@@ -49,7 +57,7 @@ function page(config, status, scheduler) {
   <meta charset="utf-8" />
   <title>Product 1</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 1080px; margin: 30px auto; padding: 0 16px; background: #fafafa; color: #111; }
+    body { font-family: Arial, sans-serif; max-width: 1120px; margin: 30px auto; padding: 0 16px; background: #fafafa; color: #111; }
     input, select { width: 100%; padding: 10px; margin: 4px 0 12px; box-sizing: border-box; }
     label { font-weight: bold; display: block; margin-top: 10px; }
     button { padding: 10px 14px; margin-right: 10px; margin-bottom: 10px; cursor: pointer; }
@@ -61,6 +69,8 @@ function page(config, status, scheduler) {
     .err { color: #b00020; font-weight: bold; }
     ul { margin-top: 8px; }
     .inlinecode { font-family: monospace; background: #f2f2f2; padding: 2px 5px; border-radius: 4px; }
+    .help { color: #666; font-size: 0.95em; margin-top: -6px; margin-bottom: 8px; }
+    .step { padding: 8px 10px; border-radius: 8px; margin-bottom: 8px; background: #f7f7f7; }
     @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -69,9 +79,13 @@ function page(config, status, scheduler) {
   <div class="muted">Friend-usable local L2 Reborn auto-vote app</div>
 
   <div class="card">
-    <h2>First-run onboarding</h2>
-    <div><b>Setup status:</b> ${setupDone ? '<span class="ok">Ready</span>' : '<span class="warn">Needs setup</span>'}</div>
-    ${setupDone ? '<div class="muted">Required config is present. You can run now or start the scheduler.</div>' : `<div class="err">Missing required fields:</div><ul>${validation.errors.map(e => `<li>${esc(e)}</li>`).join('')}</ul>`}
+    <h2>Setup wizard</h2>
+    <div><b>Status:</b> ${wizard.ready ? '<span class="ok">Ready</span>' : '<span class="warn">Needs setup</span>'}</div>
+    ${wizard.next ? `<div><b>Next step:</b> ${esc(wizard.next.title)}</div>` : '<div><b>Next step:</b> None</div>'}
+    <div style="margin-top:10px;">
+      ${wizard.steps.map(s => `<div class="step"><b>${s.id}. ${esc(s.title)}</b> — ${s.done ? '<span class="ok">done</span>' : '<span class="warn">pending</span>'}</div>`).join('')}
+    </div>
+    ${wizard.ready ? '<div class="muted">You can run a test vote now, then enable the scheduler.</div>' : `<div class="err">Missing required fields:</div><ul>${wizard.validation.errors.map(e => `<li>${esc(e)}</li>`).join('')}</ul>`}
   </div>
 
   <div class="card">
@@ -90,9 +104,9 @@ function page(config, status, scheduler) {
   </div>
 
   <div class="card">
-    <h2>Controls</h2>
-    <form method="post" action="/run"><button type="submit">Run vote now</button></form>
-    <form method="post" action="/scheduler/start"><button type="submit">Start scheduler</button></form>
+    <h2>Quick actions</h2>
+    <form method="post" action="/run"><button type="submit">1. Run test vote now</button></form>
+    <form method="post" action="/scheduler/start"><button type="submit">2. Start scheduler</button></form>
     <form method="post" action="/scheduler/stop"><button type="submit">Stop scheduler</button></form>
     <form method="post" action="/check-updates"><button type="submit">Check updates</button></form>
     <form method="post" action="/update-now"><button type="submit">Update now</button></form>
@@ -103,38 +117,62 @@ function page(config, status, scheduler) {
 
   <div class="grid">
     <div class="card">
-      <h2>Setup</h2>
+      <h2>Guided setup</h2>
       <form method="post" action="/save">
         <label>Email</label><input name="email" value="${esc(config.l2reborn.email)}" />
+        <div class="help">${esc(helpText('email'))}</div>
+
         <label>Password</label><input name="password" type="password" placeholder="${esc(masked(config.l2reborn.password))}" value="" />
+        <div class="help">${esc(helpText('password'))}</div>
+
         <label>Gmail App Password</label><input name="gmailAppPass" type="password" placeholder="${esc(masked(config.l2reborn.gmailAppPass))}" value="" />
-        <label>Server ID</label><input name="serverId" value="${esc(config.l2reborn.serverId || '3')}" />
+        <div class="help">${esc(helpText('gmailAppPass'))}</div>
+
+        <label>Server ID</label><input name="serverId" value="${esc(config.l2reborn.serverId || hints.serverIdSuggestion)}" />
+        <div class="help">${esc(helpText('serverId'))}</div>
+
         <label>Game Account</label><input name="account" value="${esc(config.l2reborn.account)}" />
+        <div class="help">${esc(helpText('account'))} ${esc(hints.accountHelp)}</div>
+
         <label>Character ID</label><input name="characterId" value="${esc(config.l2reborn.characterId)}" />
+        <div class="help">${esc(helpText('characterId'))} ${esc(hints.characterIdHelp)}</div>
+
         <label>Character Name</label><input name="characterName" value="${esc(config.l2reborn.characterName)}" />
+        <div class="help">${esc(helpText('characterName'))}</div>
+
         <label>2Captcha Key</label><input name="twoCaptchaKey" type="password" placeholder="${esc(masked(config.l2reborn.twoCaptchaKey))}" value="" />
+        <div class="help">${esc(helpText('twoCaptchaKey'))}</div>
+
         <label>Interval Hours</label><input name="intervalHours" value="${esc(config.schedule.intervalHours || 12)}" />
+        <div class="help">${esc(helpText('intervalHours'))}</div>
+
         <label>Enable Schedule</label><input name="enabled" value="${config.schedule.enabled ? 'true' : 'false'}" />
+        <div class="help">${esc(helpText('enabled'))}</div>
+
         <label>Enable Notifications</label><input name="notificationsEnabled" value="${config.notifications.enabled ? 'true' : 'false'}" />
-        <button type="submit">Save config</button>
+        <div class="help">${esc(helpText('notificationsEnabled'))}</div>
+
+        <button type="submit">Save setup</button>
       </form>
     </div>
 
     <div class="card">
-      <h2>Updates & Packaging</h2>
+      <h2>Updates, service, rollback</h2>
       <form method="post" action="/save-update">
         <label>Current Version</label><input name="currentVersion" value="${esc(config.update.currentVersion || '0.1.0')}" />
         <label>Latest Version</label><input name="latestVersion" value="${esc(config.update.latestVersion || '0.1.0')}" />
         <label>Remote Manifest Path / URL</label><input name="remoteManifestPath" value="${esc(config.update.remoteManifestPath || '')}" />
+        <div class="help">${esc(helpText('remoteManifestPath'))}</div>
         <button type="submit">Save update settings</button>
       </form>
+
       <label>Available backups</label>
       <form method="post" action="/rollback">
         <select name="backupFile">${backups.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join('')}</select>
         <button type="submit">Rollback from selected backup</button>
       </form>
-      <p class="muted">Supports local path or remote HTTP(S) manifest. Update Now uses the manifest's <span class="inlinecode">bundleUrl</span>.</p>
-      <p class="muted">Use <span class="inlinecode">install.sh</span> for first install and <span class="inlinecode">install-service.sh</span> for reboot-safe scheduler setup.</p>
+
+      <p class="muted">If your friend wants auto-start after reboot, generate the service file and follow the commands from <span class="inlinecode">install-service.sh</span>.</p>
     </div>
   </div>
 </body>
@@ -242,7 +280,7 @@ app.post('/build-bundle', (req, res) => {
 });
 
 app.get('/api/status', (req, res) => {
-  res.json({ ...loadStatus(), scheduler: schedulerStatus(), validation: validateConfig(loadConfig()), backups: listBackups() });
+  res.json({ ...loadStatus(), scheduler: schedulerStatus(), validation: validateConfig(loadConfig()), backups: listBackups(), wizard: wizardState(loadConfig()) });
 });
 
 app.listen(PORT, () => {
