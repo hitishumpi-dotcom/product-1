@@ -2,15 +2,15 @@
   "app": "Product 1",
   "lastRunAt": "2026-03-29T10:48:07.032Z",
   "lastResult": "CONFIG_MISSING",
-  "lastSummary": "Update failed: socket hang up",
+  "lastSummary": "Rolled back from product-1-2026-03-29T12-13-24-321Z.tar.gz",
   "consecutiveFailures": 1,
   "schedulerRunning": false,
   "update": {
     "currentVersion": "0.1.0",
     "latestVersion": "0.2.0",
     "updateAvailable": true,
-    "lastCheckedAt": "2026-03-29T11:48:28.698Z",
-    "lastAction": "Update failed: socket hang up"
+    "lastCheckedAt": "2026-03-29T12:13:27.374Z",
+    "lastAction": "Rolled back from product-1-2026-03-29T12-13-24-321Z.tar.gz"
   },
   "schedulerPid": null
 }

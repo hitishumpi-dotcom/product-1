@@ -1,14 +1,7 @@
-const fs = require('fs');
-const path = require('path');
-const { execFileSync } = require('child_process');
+const { buildShareBundle } = require('./share');
 
 function buildBundle() {
-  const root = path.join(__dirname, '..', '..');
-  const dist = path.join(root, 'dist');
-  fs.mkdirSync(dist, { recursive: true });
-  const out = path.join(dist, 'product-1.tar.gz');
-  execFileSync('tar', ['-czf', out, '--exclude=node_modules', '--exclude=data', '-C', root, '.']);
-  return out;
+  return buildShareBundle('0.1.0');
 }
 
 module.exports = { buildBundle };
