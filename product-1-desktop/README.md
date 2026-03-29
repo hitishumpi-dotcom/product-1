@@ -100,9 +100,10 @@ When launched from the packaged Electron app, Product 1 uses the Electron user-d
 
 This repo now has packaging scaffolding, but actual production-ready installer generation may still need:
 
-- app icons (`.ico`, `.icns`, `.png`) for branded installers
+- branded app icons (`.ico`, `.icns`, `.png`) for polished installers
 - platform-specific code signing / notarization if distributing publicly
 - building on the target OS for best artifact compatibility
+- Wine on Linux if you want to produce Windows artifacts from this machine
 - verifying that Playwright browser/runtime requirements are satisfied on the target machine
 
 ## Backend preserved

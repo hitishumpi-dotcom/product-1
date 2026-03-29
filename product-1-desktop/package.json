@@ -65,7 +65,6 @@
       "runAfterFinish": true
     },
     "win": {
-      "icon": "assets/icon.svg",
       "target": [
         {
           "target": "nsis",

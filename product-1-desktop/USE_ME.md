@@ -27,10 +27,14 @@ npm run dev
 npm run dist:linux
 ```
 
+This machine successfully produced:
+- AppImage
+- DEB
+
 ### Windows
-```bash
-npm run dist:win
-```
+Windows packaging is configured, but building the actual `.exe` from this Linux machine requires Wine.
+See:
+- `WINDOWS_BUILD.md`
 
 Build output:
 - `product-1-desktop/release/`
