@@ -1,0 +1,13 @@
+[Unit]
+Description=Product 1 Scheduler
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/user/OpenClaw/product-1
+ExecStart=/usr/bin/node /home/user/OpenClaw/product-1/src/runner.js scheduler
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

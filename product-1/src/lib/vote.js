@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const { loadConfig, loadStatus, saveStatus, COOKIE_PATH } = require('./config');
+const { validateConfig } = require('./validate');
 
 function httpGet(url) {
   return new Promise((resolve, reject) => {
@@ -100,26 +101,15 @@ async function isLoggedIn(page) {
   }
 }
 
-function validateConfig(config) {
-  const required = [
-    config.l2reborn.email,
-    config.l2reborn.password,
-    config.l2reborn.gmailAppPass,
-    config.l2reborn.account,
-    config.l2reborn.characterId,
-    config.l2reborn.twoCaptchaKey,
-  ];
-  return required.every(Boolean);
-}
-
 async function runVoteOnce() {
   const config = loadConfig();
   const status = loadStatus();
-  if (!validateConfig(config)) {
+  const validation = validateConfig(config);
+  if (!validation.ok) {
     const result = {
       ok: false,
       code: 'CONFIG_MISSING',
-      summary: 'Missing required configuration fields',
+      summary: validation.errors.join('; '),
       at: new Date().toISOString(),
     };
     status.lastRunAt = result.at;

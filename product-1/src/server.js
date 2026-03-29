@@ -3,6 +3,9 @@ const { loadConfig, saveConfig, loadStatus } = require('./lib/config');
 const { checkForUpdates } = require('./lib/update');
 const { runVoteOnce } = require('./lib/vote');
 const { startScheduler, stopScheduler, schedulerStatus } = require('./lib/scheduler');
+const { validateConfig } = require('./lib/validate');
+const { writeReleaseManifest } = require('./lib/release');
+const { writeServiceFile } = require('./lib/service');
 
 const app = express();
 const PORT = process.env.PORT || 4311;
@@ -16,6 +19,8 @@ function esc(v) {
 
 function page(config, status, scheduler) {
   const u = status.update || {};
+  const validation = validateConfig(config);
+  const setupDone = validation.ok;
   return `<!doctype html>
 <html>
 <head>
@@ -32,12 +37,19 @@ function page(config, status, scheduler) {
     .ok { color: #0a7f2e; font-weight: bold; }
     .warn { color: #a15c00; font-weight: bold; }
     .err { color: #b00020; font-weight: bold; }
+    ul { margin-top: 8px; }
     @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <h1>Product 1</h1>
   <div class="muted">Friend-usable local L2 Reborn auto-vote app</div>
+
+  <div class="card">
+    <h2>First-run onboarding</h2>
+    <div><b>Setup status:</b> ${setupDone ? '<span class="ok">Ready</span>' : '<span class="warn">Needs setup</span>'}</div>
+    ${setupDone ? '<div class="muted">Required config is present. You can run now or start the scheduler.</div>' : `<div class="err">Missing required fields:</div><ul>${validation.errors.map(e => `<li>${esc(e)}</li>`).join('')}</ul>`}
+  </div>
 
   <div class="card">
     <h2>Status</h2>
@@ -58,6 +70,8 @@ function page(config, status, scheduler) {
     <form method="post" action="/scheduler/start"><button type="submit">Start scheduler</button></form>
     <form method="post" action="/scheduler/stop"><button type="submit">Stop scheduler</button></form>
     <form method="post" action="/check-updates"><button type="submit">Check updates</button></form>
+    <form method="post" action="/build-release"><button type="submit">Build release manifest</button></form>
+    <form method="post" action="/build-service"><button type="submit">Generate service file</button></form>
   </div>
 
   <div class="grid">
@@ -79,13 +93,14 @@ function page(config, status, scheduler) {
     </div>
 
     <div class="card">
-      <h2>Updates</h2>
+      <h2>Updates & Packaging</h2>
       <form method="post" action="/save-update">
         <label>Current Version</label><input name="currentVersion" value="${esc(config.update.currentVersion || '0.1.0')}" />
         <label>Latest Version</label><input name="latestVersion" value="${esc(config.update.latestVersion || '0.1.0')}" />
         <button type="submit">Save update settings</button>
       </form>
-      <p class="muted">For now this is manual. Later we can wire it to GitHub releases so friends get prompted automatically.</p>
+      <p class="muted">Manual today. Later this should read a remote manifest / GitHub release and prompt the user to update.</p>
+      <p class="muted">Service file generation gives a reboot-safe scheduler template for Linux systems.</p>
     </div>
   </div>
 </body>
@@ -143,8 +158,18 @@ app.post('/scheduler/stop', (req, res) => {
   res.redirect('/');
 });
 
+app.post('/build-release', (req, res) => {
+  writeReleaseManifest();
+  res.redirect('/');
+});
+
+app.post('/build-service', (req, res) => {
+  writeServiceFile();
+  res.redirect('/');
+});
+
 app.get('/api/status', (req, res) => {
-  res.json({ ...loadStatus(), scheduler: schedulerStatus() });
+  res.json({ ...loadStatus(), scheduler: schedulerStatus(), validation: validateConfig(loadConfig()) });
 });
 
 app.listen(PORT, () => {

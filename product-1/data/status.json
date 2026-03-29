@@ -4,12 +4,12 @@
   "lastResult": "CONFIG_MISSING",
   "lastSummary": "Missing required configuration fields",
   "consecutiveFailures": 1,
-  "schedulerRunning": true,
+  "schedulerRunning": false,
   "update": {
     "currentVersion": "0.1.0",
     "latestVersion": "0.1.0",
     "updateAvailable": false,
     "lastCheckedAt": "2026-03-29T10:54:01.154Z"
   },
-  "schedulerPid": 70039
+  "schedulerPid": null
 }
