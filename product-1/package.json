@@ -1,0 +1,22 @@
+{
+  "name": "product-1",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local auto-vote product with update checks and simple web UI",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "vote:run": "node src/runner.js run-once",
+    "scheduler": "node src/runner.js scheduler",
+    "scheduler:start": "node src/runner.js scheduler",
+    "check:update": "node src/runner.js check-updates",
+    "prepare:share": "node scripts/prepare-share.js",
+    "test:update-server": "node src/update-test-server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "imapflow": "^1.2.18",
+    "playwright": "^1.58.2"
+  }
+}

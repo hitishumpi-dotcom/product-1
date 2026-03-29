@@ -1,0 +1,88 @@
+{
+  "name": "product-1-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Electron desktop wrapper for Product 1",
+  "homepage": "https://openclaw.local/product-1-desktop",
+  "main": "electron/main.js",
+  "author": {
+    "name": "OpenClaw",
+    "email": "product1@example.local"
+  },
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "electron .",
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win nsis",
+    "dist:linux": "electron-builder --linux AppImage deb",
+    "dist:portable": "electron-builder --win portable",
+    "prepare:icons": "node scripts/prepare-icons.js",
+    "postinstall": "node scripts/check-backend.js"
+  },
+  "dependencies": {
+    "electron-log": "^5.2.4"
+  },
+  "devDependencies": {
+    "electron": "^37.2.1",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.openclaw.product1desktop",
+    "productName": "Product 1 Desktop",
+    "artifactName": "product-1-desktop-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../product-1",
+        "to": "backend",
+        "filter": [
+          "**/*",
+          "!dist{,/**}",
+          "!backups{,/**}",
+          "!tmp{,/**}",
+          "!test-releases{,/**}"
+        ]
+      }
+    ],
+    "extraMetadata": {
+      "main": "electron/main.js"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true
+    },
+    "win": {
+      "icon": "assets/icon.svg",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "icon": "assets/icon.svg",
+      "maintainer": "OpenClaw <product1@example.local>",
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    }
+  }
+}
