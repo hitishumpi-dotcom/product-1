@@ -6,10 +6,10 @@
   "consecutiveFailures": 1,
   "schedulerRunning": false,
   "update": {
-    "currentVersion": "0.1.0",
+    "currentVersion": "0.2.0",
     "latestVersion": "0.2.0",
-    "updateAvailable": true,
-    "lastCheckedAt": "2026-03-29T11:07:03.967Z"
+    "updateAvailable": false,
+    "lastCheckedAt": "2026-03-29T11:44:05.918Z"
   },
   "schedulerPid": null
 }
