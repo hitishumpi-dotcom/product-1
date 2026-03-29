@@ -2,7 +2,10 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const DATA_DIR = path.join(ROOT, 'data');
+const STORAGE_ROOT = process.env.PRODUCT1_USER_DATA
+  ? path.resolve(process.env.PRODUCT1_USER_DATA)
+  : ROOT;
+const DATA_DIR = path.join(STORAGE_ROOT, 'data');
 const CONFIG_PATH = path.join(DATA_DIR, 'config.json');
 const STATUS_PATH = path.join(DATA_DIR, 'status.json');
 const COOKIE_PATH = path.join(DATA_DIR, 'l2reborn-cookies.json');
@@ -94,6 +97,7 @@ function saveStatus(status) {
 
 module.exports = {
   ROOT,
+  STORAGE_ROOT,
   DATA_DIR,
   CONFIG_PATH,
   STATUS_PATH,
