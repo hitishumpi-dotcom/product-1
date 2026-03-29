@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { loadConfig, loadStatus, saveStatus } = require('./config');
+const { loadConfig, loadStatus, saveStatus, saveConfig } = require('./config');
 const { fetchText, downloadFile } = require('./http');
 
 const ROOT = path.join(__dirname, '..', '..');
@@ -30,8 +30,16 @@ function backupCurrent() {
   fs.mkdirSync(BACKUP_DIR, { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   const out = path.join(BACKUP_DIR, `product-1-${stamp}.tar.gz`);
-  execFileSync('tar', ['-czf', out, '--exclude=node_modules', '--exclude=dist', '--exclude=tmp', '-C', ROOT, '.']);
+  execFileSync('tar', ['-czf', out, '--exclude=node_modules', '--exclude=dist', '--exclude=tmp', '--exclude=backups', '-C', ROOT, '.']);
   return out;
+}
+
+function rollbackFromBackup(backupPath) {
+  if (!backupPath || !fs.existsSync(backupPath)) {
+    throw new Error('Backup file not found');
+  }
+  execFileSync('tar', ['-xzf', backupPath, '-C', ROOT, '--strip-components=0']);
+  return { ok: true, restoredFrom: backupPath };
 }
 
 async function applyUpdateFromManifestUrl(manifestUrl) {
@@ -54,13 +62,18 @@ async function applyUpdateFromManifestUrl(manifestUrl) {
   execFileSync('tar', ['-xzf', bundlePath, '-C', ROOT, '--strip-components=0']);
 
   config.update.currentVersion = manifest.version;
+  config.update.latestVersion = manifest.version;
   if (manifest.manifestUrl) config.update.remoteManifestPath = manifest.manifestUrl;
+  saveConfig(config);
+
   status.update = {
     currentVersion: manifest.version,
     latestVersion: manifest.version,
     updateAvailable: false,
     lastCheckedAt: new Date().toISOString(),
+    lastAction: `Updated to ${manifest.version}`,
   };
+  status.lastSummary = `Updated to ${manifest.version}`;
   saveStatus(status);
 
   return {
@@ -73,4 +86,4 @@ async function applyUpdateFromManifestUrl(manifestUrl) {
   };
 }
 
-module.exports = { compareVersions, fetchManifest, backupCurrent, applyUpdateFromManifestUrl };
+module.exports = { compareVersions, fetchManifest, backupCurrent, rollbackFromBackup, applyUpdateFromManifestUrl };

@@ -1,5 +1,5 @@
 const express = require('express');
-const { loadConfig, saveConfig, loadStatus } = require('./lib/config');
+const { loadConfig, saveConfig, loadStatus, saveStatus } = require('./lib/config');
 const { checkForUpdates } = require('./lib/update');
 const { runVoteOnce } = require('./lib/vote');
 const { startScheduler, stopScheduler, schedulerStatus } = require('./lib/scheduler');
@@ -8,9 +8,13 @@ const { writeReleaseManifest } = require('./lib/release');
 const { writeServiceFile } = require('./lib/service');
 const { buildBundle } = require('./lib/bundle');
 const { LOG_PATH } = require('./lib/notify');
+const { applyUpdateFromManifestUrl, rollbackFromBackup } = require('./lib/update-apply');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 4311;
+const BACKUP_DIR = path.join(__dirname, '..', 'backups');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -26,18 +30,27 @@ function masked(v) {
   return '•'.repeat(Math.max(4, s.length - 4)) + s.slice(-4);
 }
 
+function listBackups() {
+  if (!fs.existsSync(BACKUP_DIR)) return [];
+  return fs.readdirSync(BACKUP_DIR)
+    .filter(name => name.endsWith('.tar.gz'))
+    .sort()
+    .reverse();
+}
+
 function page(config, status, scheduler) {
   const u = status.update || {};
   const validation = validateConfig(config);
   const setupDone = validation.ok;
+  const backups = listBackups();
   return `<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
   <title>Product 1</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 1050px; margin: 30px auto; padding: 0 16px; background: #fafafa; color: #111; }
-    input { width: 100%; padding: 10px; margin: 4px 0 12px; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; max-width: 1080px; margin: 30px auto; padding: 0 16px; background: #fafafa; color: #111; }
+    input, select { width: 100%; padding: 10px; margin: 4px 0 12px; box-sizing: border-box; }
     label { font-weight: bold; display: block; margin-top: 10px; }
     button { padding: 10px 14px; margin-right: 10px; margin-bottom: 10px; cursor: pointer; }
     .card { background: white; border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin: 16px 0; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
@@ -72,6 +85,7 @@ function page(config, status, scheduler) {
     <div><b>Latest:</b> ${esc(u.latestVersion || '0.1.0')}</div>
     <div><b>Update available:</b> ${u.updateAvailable ? '<span class="warn">Yes</span>' : '<span class="ok">No</span>'}</div>
     <div><b>Last update check:</b> ${esc(u.lastCheckedAt || 'Never')}</div>
+    <div><b>Last updater action:</b> ${esc(u.lastAction || 'None')}</div>
     <div><b>Notifications log:</b> <span class="inlinecode">${esc(LOG_PATH)}</span></div>
   </div>
 
@@ -81,6 +95,7 @@ function page(config, status, scheduler) {
     <form method="post" action="/scheduler/start"><button type="submit">Start scheduler</button></form>
     <form method="post" action="/scheduler/stop"><button type="submit">Stop scheduler</button></form>
     <form method="post" action="/check-updates"><button type="submit">Check updates</button></form>
+    <form method="post" action="/update-now"><button type="submit">Update now</button></form>
     <form method="post" action="/build-release"><button type="submit">Build release manifest</button></form>
     <form method="post" action="/build-service"><button type="submit">Generate service file</button></form>
     <form method="post" action="/build-bundle"><button type="submit">Build shareable bundle</button></form>
@@ -110,10 +125,15 @@ function page(config, status, scheduler) {
       <form method="post" action="/save-update">
         <label>Current Version</label><input name="currentVersion" value="${esc(config.update.currentVersion || '0.1.0')}" />
         <label>Latest Version</label><input name="latestVersion" value="${esc(config.update.latestVersion || '0.1.0')}" />
-        <label>Remote Manifest Path</label><input name="remoteManifestPath" value="${esc(config.update.remoteManifestPath || '')}" />
+        <label>Remote Manifest Path / URL</label><input name="remoteManifestPath" value="${esc(config.update.remoteManifestPath || '')}" />
         <button type="submit">Save update settings</button>
       </form>
-      <p class="muted">Supports manual latest version or a local/remote manifest path next.</p>
+      <label>Available backups</label>
+      <form method="post" action="/rollback">
+        <select name="backupFile">${backups.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join('')}</select>
+        <button type="submit">Rollback from selected backup</button>
+      </form>
+      <p class="muted">Supports local path or remote HTTP(S) manifest. Update Now uses the manifest's <span class="inlinecode">bundleUrl</span>.</p>
       <p class="muted">Use <span class="inlinecode">install.sh</span> for first install and <span class="inlinecode">install-service.sh</span> for reboot-safe scheduler setup.</p>
     </div>
   </div>
@@ -159,8 +179,40 @@ app.post('/run', async (req, res) => {
   res.redirect('/');
 });
 
-app.post('/check-updates', (req, res) => {
-  checkForUpdates();
+app.post('/check-updates', async (req, res) => {
+  await checkForUpdates();
+  res.redirect('/');
+});
+
+app.post('/update-now', (req, res) => {
+  const config = loadConfig();
+  if (config.update.remoteManifestPath) {
+    applyUpdateFromManifestUrl(config.update.remoteManifestPath).catch(err => {
+      const status = loadStatus();
+      status.update = {
+        ...(status.update || {}),
+        lastAction: `Update failed: ${err.message}`,
+        lastCheckedAt: new Date().toISOString(),
+      };
+      status.lastSummary = `Update failed: ${err.message}`;
+      saveStatus(status);
+    });
+  }
+  res.redirect('/');
+});
+
+app.post('/rollback', (req, res) => {
+  const name = req.body.backupFile || '';
+  const full = path.join(BACKUP_DIR, path.basename(name));
+  rollbackFromBackup(full);
+  const status = loadStatus();
+  status.update = {
+    ...(status.update || {}),
+    lastAction: `Rolled back from ${path.basename(name)}`,
+    lastCheckedAt: new Date().toISOString(),
+  };
+  status.lastSummary = `Rolled back from ${path.basename(name)}`;
+  saveStatus(status);
   res.redirect('/');
 });
 
@@ -190,7 +242,7 @@ app.post('/build-bundle', (req, res) => {
 });
 
 app.get('/api/status', (req, res) => {
-  res.json({ ...loadStatus(), scheduler: schedulerStatus(), validation: validateConfig(loadConfig()) });
+  res.json({ ...loadStatus(), scheduler: schedulerStatus(), validation: validateConfig(loadConfig()), backups: listBackups() });
 });
 
 app.listen(PORT, () => {

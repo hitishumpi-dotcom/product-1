@@ -1,3 +1,9 @@
 node_modules/
 data/
 !data/.gitkeep
+backups/
+tmp/
+dist/
+remote-version.json
+release.json
+*.log

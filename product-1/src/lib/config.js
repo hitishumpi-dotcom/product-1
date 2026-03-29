@@ -79,7 +79,8 @@ function loadStatus() {
         currentVersion: '0.1.0',
         latestVersion: '0.1.0',
         updateAvailable: false,
-        lastCheckedAt: null
+        lastCheckedAt: null,
+        lastAction: null
       }
     };
   }
