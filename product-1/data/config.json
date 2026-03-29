@@ -1,0 +1,33 @@
+{
+  "appName": "Product 1",
+  "version": "0.1.0",
+  "update": {
+    "currentVersion": "0.1.0",
+    "latestVersion": "0.1.0",
+    "updateAvailable": false,
+    "channel": "manual"
+  },
+  "schedule": {
+    "enabled": false,
+    "intervalHours": 12,
+    "autoStartScheduler": false
+  },
+  "l2reborn": {
+    "email": "",
+    "password": "",
+    "gmailAppPass": "",
+    "serverId": "3",
+    "account": "",
+    "characterId": "",
+    "characterName": "",
+    "signinUrl": "https://l2reborn.org/signin/",
+    "shopUrl": "https://l2reborn.org/shop/",
+    "twoCaptchaKey": "",
+    "turnstileSitekey": "0x4AAAAAAAPFfPxwacy3GCxf"
+  },
+  "notifications": {
+    "enabled": false,
+    "channel": "",
+    "target": ""
+  }
+}

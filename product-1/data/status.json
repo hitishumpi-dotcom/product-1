@@ -1,0 +1,14 @@
+{
+  "app": "Product 1",
+  "lastRunAt": "2026-03-29T10:48:07.032Z",
+  "lastResult": "CONFIG_MISSING",
+  "lastSummary": "Missing required configuration fields",
+  "consecutiveFailures": 1,
+  "schedulerRunning": false,
+  "update": {
+    "currentVersion": "0.1.0",
+    "latestVersion": "0.1.0",
+    "updateAvailable": false,
+    "lastCheckedAt": "2026-03-29T10:48:07.031Z"
+  }
+}
