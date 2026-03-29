@@ -126,7 +126,7 @@ function ensurePlaywrightBrowsers() {
 
     const child = execFile(playwrightBin, ['install', 'chromium'], {
       cwd: backendRoot,
-      env: { ...process.env, PLAYWRIGHT_BROWSERS_PATH: '0' },
+      env: { ...process.env },
     }, (err, stdout, stderr) => {
       if (err) {
         log.warn('playwright install chromium warning:', stderr || err.message);
