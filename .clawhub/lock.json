@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "skills": {
+    "skill-vetter": {
+      "version": "1.0.0",
+      "installedAt": 1774360364642
+    },
+    "1password": {
+      "version": "1.0.1",
+      "installedAt": 1774361483045
+    },
+    "himalaya": {
+      "version": "1.0.0",
+      "installedAt": 1774361485093
+    },
+    "summarize": {
+      "version": "1.0.0",
+      "installedAt": 1774361554950
+    },
+    "mcporter": {
+      "version": "1.0.0",
+      "installedAt": 1774361557059
+    },
+    "nano-pdf": {
+      "version": "1.0.0",
+      "installedAt": 1774361558963
+    },
+    "model-usage": {
+      "version": "1.0.0",
+      "installedAt": 1774361561369
+    },
+    "session-logs": {
+      "version": "1.0.0",
+      "installedAt": 1774361563292
+    },
+    "codex-sub-agents": {
+      "version": "1.0.0",
+      "installedAt": 1774361807942
+    },
+    "codex-orchestrator": {
+      "version": "1.0.0",
+      "installedAt": 1774361810468
+    },
+    "codex": {
+      "version": "1.0.0",
+      "installedAt": 1774361813686
+    },
+    "openclaw-subagents": {
+      "version": "1.0.0",
+      "installedAt": 1774361835690
+    },
+    "subagent-driven-development": {
+      "version": "0.1.0",
+      "installedAt": 1774361838433
+    },
+    "subagent-dashboard": {
+      "version": "1.0.0",
+      "installedAt": 1774361841656
+    },
+    "github": {
+      "version": "1.0.0",
+      "installedAt": 1774361894443
+    },
+    "video-frames": {
+      "version": "1.0.0",
+      "installedAt": 1774361937897
+    },
+    "discord": {
+      "version": "1.0.1",
+      "installedAt": 1774361940010
+    },
+    "xurl": {
+      "version": "1.0.0",
+      "installedAt": 1774361989818
+    },
+    "blogwatcher": {
+      "version": "1.0.0",
+      "installedAt": 1774361992498
+    },
+    "spotify-player": {
+      "version": "1.0.0",
+      "installedAt": 1774361997398
+    },
+    "openclaw-whatsapp": {
+      "version": "0.3.0",
+      "installedAt": 1774362095700
+    },
+    "github-issue-resolver": {
+      "version": "1.0.0",
+      "installedAt": 1774362112803
+    },
+    "github-cli": {
+      "version": "1.0.0",
+      "installedAt": 1774362115321
+    },
+    "issue-prioritizer": {
+      "version": "1.2.0",
+      "installedAt": 1774362125396
+    },
+    "telegram": {
+      "version": "1.0.1",
+      "installedAt": 1774362200286
+    },
+    "tg": {
+      "version": "0.1.0",
+      "installedAt": 1774362202635
+    },
+    "openclaw-telegram-setup": {
+      "version": "1.0.0",
+      "installedAt": 1774362205076
+    },
+    "memory-setup-openclaw": {
+      "version": "1.0.0",
+      "installedAt": 1774362312828
+    },
+    "elite-longterm-memory-local": {
+      "version": "1.1.0",
+      "installedAt": 1774362364255
+    },
+    "self-improving-1-2-16": {
+      "version": "1.0.0",
+      "installedAt": 1774362385215
+    },
+    "self-improving": {
+      "version": "1.2.16",
+      "installedAt": 1774362388047
+    },
+    "context-budgeting": {
+      "version": "1.0.0",
+      "installedAt": 1774362509619
+    },
+    "session-watchdog": {
+      "version": "1.0.0",
+      "installedAt": 1774362532807
+    },
+    "auto-context": {
+      "version": "1.0.0",
+      "installedAt": 1774362535523
+    }
+  }
+}

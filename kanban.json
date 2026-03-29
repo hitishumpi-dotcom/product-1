@@ -1,0 +1,47 @@
+{
+  "columns": [
+    {
+      "id": "backlog",
+      "title": "Backlog",
+      "color": "#6b7280"
+    },
+    {
+      "id": "in-progress",
+      "title": "In Progress",
+      "color": "#f59e0b"
+    },
+    {
+      "id": "review",
+      "title": "Review",
+      "color": "#8b5cf6"
+    },
+    {
+      "id": "done",
+      "title": "Done",
+      "color": "#10b981"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Explore the Dashboard",
+      "description": "Check out the Mission Control dashboard to see your agents, cron jobs, system health, and more.",
+      "column": "in-progress",
+      "priority": "medium"
+    },
+    {
+      "id": 2,
+      "title": "Ask your agent to add a task",
+      "description": "Try chatting with your agent and say: \"Add a task to review my weekly reports\". It will update this board automatically.",
+      "column": "backlog",
+      "priority": "high"
+    },
+    {
+      "id": 3,
+      "title": "Set up your first cron job",
+      "description": "Automate a recurring task — like a daily summary or weekly check-in. Go to Cron Jobs to see what's running.",
+      "column": "backlog",
+      "priority": "low"
+    }
+  ]
+}

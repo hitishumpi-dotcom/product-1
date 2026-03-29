@@ -1,0 +1,10 @@
+{
+  "name": "openclaw-scripts",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Persistent runtime deps for OpenClaw scripts",
+  "dependencies": {
+    "imapflow": "^1.1.1",
+    "playwright": "^1.52.0"
+  }
+}

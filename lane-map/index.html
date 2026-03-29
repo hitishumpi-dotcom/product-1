@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://esm.sh; style-src 'self' 'unsafe-inline';" />
+    <title>Lane Map</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: system-ui, sans-serif;
+        background: #f5f5f5;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 48px 16px;
+      }
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 32px;
+        letter-spacing: -0.02em;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+        width: 100%;
+        max-width: 900px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        border-top: 4px solid var(--accent);
+      }
+      .card .emoji { font-size: 1.75rem; margin-bottom: 12px; }
+      .card h2 { font-size: 1rem; font-weight: 700; color: #111; margin-bottom: 6px; }
+      .card p  { font-size: 0.875rem; color: #555; line-height: 1.5; }
+    </style>
+  </head>
+  <body>
+    <h1>🗺️ Lane Map</h1>
+    <div class="grid" id="root"></div>
+    <script type="module">
+      const lanes = [
+        {
+          emoji: "🔧",
+          name: "WorkLab",
+          purpose: "Builds systems, apps, and automations. Execution-focused.",
+          accent: "#6366f1"
+        },
+        {
+          emoji: "💰",
+          name: "FinanceManager",
+          purpose: "Handles personal finance tracking and financial decisions.",
+          accent: "#22c55e"
+        },
+        {
+          emoji: "🏢",
+          name: "BusinessOps",
+          purpose: "Manages rental operations and business processes.",
+          accent: "#f59e0b"
+        },
+        {
+          emoji: "💬",
+          name: "SocialHub",
+          purpose: "Shared assistant for general interaction and communication.",
+          accent: "#ec4899"
+        }
+      ];
+
+      const root = document.getElementById("root");
+      lanes.forEach(({ emoji, name, purpose, accent }) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.setProperty("--accent", accent);
+        card.innerHTML = `
+          <div class="emoji">${emoji}</div>
+          <h2>${name}</h2>
+          <p>${purpose}</p>
+        `;
+        root.appendChild(card);
+      });
+    </script>
+  </body>
+</html>
