@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
+const { DATA_DIR } = require('./paths');
 
-const LOG_PATH = path.join(__dirname, '..', '..', 'data', 'notifications.log');
+const LOG_PATH = path.join(DATA_DIR, 'notifications.log');
 
 function logNotification(message) {
   fs.mkdirSync(path.dirname(LOG_PATH), { recursive: true });

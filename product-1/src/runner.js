@@ -3,7 +3,7 @@ const { checkForUpdates } = require('./lib/update');
 const { runVoteOnce } = require('./lib/vote');
 
 async function runOnce() {
-  checkForUpdates();
+  await checkForUpdates();
   const result = await runVoteOnce();
   console.log(JSON.stringify(result, null, 2));
 }
@@ -16,7 +16,7 @@ async function runScheduler() {
   saveStatus(status);
 
   const loop = async () => {
-    checkForUpdates();
+    await checkForUpdates();
     const freshConfig = loadConfig();
     if (freshConfig.schedule.enabled) {
       await runVoteOnce();
@@ -34,7 +34,7 @@ if (mode === 'run-once') {
 } else if (mode === 'scheduler') {
   runScheduler();
 } else if (mode === 'check-updates') {
-  console.log(JSON.stringify(checkForUpdates(), null, 2));
+  checkForUpdates().then(result => console.log(JSON.stringify(result, null, 2)));
 } else {
   console.log('Usage: node src/runner.js [run-once|scheduler|check-updates]');
 }

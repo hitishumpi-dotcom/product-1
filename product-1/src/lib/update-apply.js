@@ -1,12 +1,17 @@
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { execFileSync, execSync } = require('child_process');
 const { loadConfig, loadStatus, saveStatus, saveConfig } = require('./config');
 const { fetchText, downloadFile } = require('./http');
+const { ROOT, TMP_DIR, BACKUP_DIR } = require('./paths');
 
-const ROOT = path.join(__dirname, '..', '..');
-const TMP_DIR = path.join(ROOT, 'tmp');
-const BACKUP_DIR = path.join(ROOT, 'backups');
+function checkTarAvailable() {
+  try {
+    execSync('tar --version', { stdio: 'ignore' });
+  } catch {
+    throw new Error('tar is not available on this system. Update, backup, and rollback features require tar.');
+  }
+}
 
 function compareVersions(a, b) {
   const pa = String(a).split('.').map(n => Number(n));
@@ -27,6 +32,7 @@ async function fetchManifest(manifestUrl) {
 }
 
 function backupCurrent() {
+  checkTarAvailable();
   fs.mkdirSync(BACKUP_DIR, { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   const out = path.join(BACKUP_DIR, `product-1-${stamp}.tar.gz`);
@@ -38,6 +44,7 @@ function rollbackFromBackup(backupPath) {
   if (!backupPath || !fs.existsSync(backupPath)) {
     throw new Error('Backup file not found');
   }
+  checkTarAvailable();
   execFileSync('tar', ['-xzf', backupPath, '-C', ROOT, '--strip-components=0']);
   return { ok: true, restoredFrom: backupPath };
 }
@@ -55,6 +62,7 @@ async function applyUpdateFromManifestUrl(manifestUrl) {
     return { ok: true, updated: false, summary: 'Already up to date', manifest };
   }
 
+  checkTarAvailable();
   fs.mkdirSync(TMP_DIR, { recursive: true });
   const backupPath = backupCurrent();
   const bundlePath = path.join(TMP_DIR, 'update.tar.gz');

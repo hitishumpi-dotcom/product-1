@@ -1,12 +1,12 @@
 const { loadConfig, saveConfig, loadStatus, saveStatus } = require('./config');
 const { readLocalVersion } = require('./version');
-const { readRemoteManifest } = require('./updater');
+const { readRemoteManifestAsync } = require('./updater');
 
-function checkForUpdates() {
+async function checkForUpdates() {
   const config = loadConfig();
   const status = loadStatus();
   const local = readLocalVersion();
-  const remote = readRemoteManifest(config.update.remoteManifestPath);
+  const remote = await readRemoteManifestAsync(config.update.remoteManifestPath);
   const latestVersion = (remote && remote.version) || config.update.latestVersion || local.version || '0.1.0';
   const currentVersion = config.update.currentVersion || local.version || '0.1.0';
   const updateAvailable = latestVersion !== currentVersion;

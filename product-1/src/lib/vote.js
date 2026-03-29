@@ -65,11 +65,20 @@ async function doLogin(page, config, wflsToken = '') {
 }
 
 async function getVerificationLink(config, afterDate) {
-  const client = new ImapFlow({
-    host: 'imap.gmail.com', port: 993, secure: true,
-    auth: { user: config.l2reborn.email, pass: config.l2reborn.gmailAppPass }, logger: false,
-  });
-  await client.connect();
+  let client;
+  try {
+    client = new ImapFlow({
+      host: 'imap.gmail.com', port: 993, secure: true,
+      auth: { user: config.l2reborn.email, pass: config.l2reborn.gmailAppPass }, logger: false,
+    });
+    await client.connect();
+  } catch (err) {
+    const msg = err.message || '';
+    if (msg.includes('Invalid credentials') || msg.includes('AUTHENTICATIONFAILED')) {
+      throw new Error('Gmail IMAP login failed — check your Gmail App Password. Regular Gmail passwords do not work; you need a 16-character App Password from myaccount.google.com/apppasswords.');
+    }
+    throw new Error(`Gmail IMAP connection failed: ${msg}`);
+  }
   await client.mailboxOpen('INBOX');
   for (let i = 0; i < 12; i++) {
     const found = [];
@@ -176,9 +185,11 @@ async function runVoteOnce() {
       return await r.json();
     }, config.l2reborn.serverId);
 
-    if (!tokenRes.success) throw new Error('Token failed: ' + JSON.stringify(tokenRes));
+    if (!tokenRes.success) throw new Error('VIP token fetch failed: ' + JSON.stringify(tokenRes));
     const vipToken = tokenRes.data.token;
-    await page.waitForTimeout(65000);
+
+    console.log('[vote] Waiting 65s for VIP token cooldown (required by server)...');
+    await new Promise(r => setTimeout(r, 65000));
 
     const shopResult = await page.evaluate(async ({ serverId, account, characterId, vipToken }) => {
       const nr = await fetch('/wp-admin/admin-ajax.php', {
