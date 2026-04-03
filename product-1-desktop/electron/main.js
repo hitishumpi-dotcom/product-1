@@ -29,6 +29,16 @@ function getServerEntry() {
   return path.join(resolveBackendRoot(), 'src', 'server.js');
 }
 
+function resolveBundledPlaywrightExecutable() {
+  const backendRoot = resolveBackendRoot();
+  const candidates = [
+    path.join(backendRoot, 'node_modules', 'playwright-core', '.local-browsers', 'chromium-1208', 'chrome-win', 'chrome.exe'),
+    path.join(backendRoot, 'node_modules', 'playwright-core', '.local-browsers', 'chromium-1208', 'chrome-linux', 'chrome'),
+    path.join(backendRoot, 'node_modules', 'playwright-core', '.local-browsers', 'chromium-1208', 'chrome-mac', 'Chromium.app', 'Contents', 'MacOS', 'Chromium'),
+  ];
+  return candidates.find(candidate => fs.existsSync(candidate));
+}
+
 function ensureBackendExists() {
   const serverEntry = getServerEntry();
   if (!fs.existsSync(serverEntry)) {
@@ -118,11 +128,13 @@ async function launchBackend() {
   const serverEntry = getServerEntry();
   const userDataRoot = path.join(app.getPath('userData'), 'product-1-runtime');
   fs.mkdirSync(userDataRoot, { recursive: true });
+  const bundledPlaywrightExecutable = resolveBundledPlaywrightExecutable();
   const env = {
     ...process.env,
     PORT: String(BACKEND_PORT),
     PRODUCT1_DESKTOP_WRAPPER: '1',
     PRODUCT1_USER_DATA: userDataRoot,
+    ...(bundledPlaywrightExecutable ? { PRODUCT1_PLAYWRIGHT_EXECUTABLE_PATH: bundledPlaywrightExecutable } : {}),
   };
 
   log.info('Launching backend', { backendRoot, serverEntry, port: BACKEND_PORT, packaged: app.isPackaged });

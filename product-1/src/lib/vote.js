@@ -7,6 +7,21 @@ const { loadConfig, loadStatus, saveStatus, COOKIE_PATH } = require('./config');
 const { validateConfig } = require('./validate');
 const { notify } = require('./notify');
 
+function resolvePackagedChromiumExecutable() {
+  const explicit = process.env.PRODUCT1_PLAYWRIGHT_EXECUTABLE_PATH;
+  if (explicit && fs.existsSync(explicit)) {
+    return explicit;
+  }
+
+  const candidates = [
+    path.resolve(process.cwd(), 'node_modules', 'playwright-core', '.local-browsers', 'chromium-1208', 'chrome-linux', 'chrome'),
+    path.resolve(process.cwd(), 'node_modules', 'playwright-core', '.local-browsers', 'chromium-1208', 'chrome-win', 'chrome.exe'),
+    path.resolve(process.cwd(), 'node_modules', 'playwright-core', '.local-browsers', 'chromium-1208', 'chrome-mac', 'Chromium.app', 'Contents', 'MacOS', 'Chromium'),
+  ];
+
+  return candidates.find(candidate => fs.existsSync(candidate)) || undefined;
+}
+
 function httpGet(url) {
   return new Promise((resolve, reject) => {
     https.get(url, res => {
@@ -122,8 +137,10 @@ async function runVoteOnce() {
   }
 
   fs.mkdirSync(path.dirname(COOKIE_PATH), { recursive: true });
+  const executablePath = resolvePackagedChromiumExecutable();
   const browser = await chromium.launch({
     headless: true,
+    executablePath,
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
   });
 

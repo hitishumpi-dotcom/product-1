@@ -51,6 +51,10 @@
           "!tmp{,/**}",
           "!test-releases{,/**}"
         ]
+      },
+      {
+        "from": "../product-1/node_modules/playwright-core/.local-browsers",
+        "to": "backend/node_modules/playwright-core/.local-browsers"
       }
     ],
     "extraMetadata": {
