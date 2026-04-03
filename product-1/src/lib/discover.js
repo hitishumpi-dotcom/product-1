@@ -40,32 +40,57 @@ function httpGet(url) {
   });
 }
 
+function httpPost(url, body) {
+  return new Promise((resolve, reject) => {
+    const data = JSON.stringify(body);
+    const opts = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) },
+    };
+    const req = https.request(url, opts, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => resolve(d));
+    });
+    req.on('error', reject);
+    req.write(data);
+    req.end();
+  });
+}
+
 async function solveTurnstile(twoCaptchaKey, turnstileSitekey, signinUrl) {
-  dlog(`[CAPTCHA] Submitting Turnstile to 2captcha... sitekey=${turnstileSitekey.substring(0, 10)}...`);
+  dlog(`[CAPTCHA] Submitting Turnstile to 2captcha (v2 API)... sitekey=${turnstileSitekey.substring(0, 10)}...`);
   const t0 = Date.now();
 
-  const subRaw = await httpGet(
-    `https://2captcha.com/in.php?key=${twoCaptchaKey}&method=turnstile&sitekey=${turnstileSitekey}&pageurl=${encodeURIComponent(signinUrl)}&json=1`
-  );
+  const subRaw = await httpPost('https://api.2captcha.com/createTask', {
+    clientKey: twoCaptchaKey,
+    task: {
+      type: 'TurnstileTaskProxyless',
+      websiteURL: signinUrl,
+      websiteKey: turnstileSitekey,
+    },
+  });
   dlog(`[CAPTCHA] 2captcha submission response: ${subRaw}`);
   const sub = JSON.parse(subRaw);
-  if (sub.status !== 1) throw new Error('2captcha submission failed: ' + JSON.stringify(sub));
+  if (sub.errorId !== 0) throw new Error('2captcha submission failed: ' + JSON.stringify(sub));
+  const taskId = sub.taskId;
 
-  dlog(`[CAPTCHA] Task ID: ${sub.request} — polling every 2s...`);
-  for (let i = 0; i < 60; i++) {
-    await new Promise(r => setTimeout(r, 2000));
-    const pollRaw = await httpGet(
-      `https://2captcha.com/res.php?key=${twoCaptchaKey}&action=get&id=${sub.request}&json=1`
-    );
+  dlog(`[CAPTCHA] Task ID: ${taskId} — polling every 3s...`);
+  for (let i = 0; i < 100; i++) {
+    await new Promise(r => setTimeout(r, 3000));
+    const pollRaw = await httpPost('https://api.2captcha.com/getTaskResult', {
+      clientKey: twoCaptchaKey,
+      taskId,
+    });
     const poll = JSON.parse(pollRaw);
-    dlog(`[CAPTCHA] Poll #${i + 1} (${Math.round((Date.now() - t0) / 1000)}s elapsed): ${pollRaw.substring(0, 120)}`);
-    if (poll.status === 1) {
+    dlog(`[CAPTCHA] Poll #${i + 1} (${Math.round((Date.now() - t0) / 1000)}s elapsed): status=${poll.status}`);
+    if (poll.status === 'ready') {
       dlog(`[CAPTCHA] Solved in ${Math.round((Date.now() - t0) / 1000)}s`);
-      return poll.request;
+      return poll.solution.token;
     }
-    if (poll.request !== 'CAPCHA_NOT_READY') throw new Error('2captcha error: ' + JSON.stringify(poll));
+    if (poll.errorId !== 0) throw new Error('2captcha error: ' + JSON.stringify(poll));
   }
-  throw new Error('2captcha timeout after 120s — check your balance or key');
+  throw new Error('2captcha timeout — check your balance or key');
 }
 
 async function doLogin(page, config, wflsToken = '') {

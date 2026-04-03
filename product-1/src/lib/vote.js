@@ -32,18 +32,43 @@ function httpGet(url) {
   });
 }
 
+function httpPost(url, body) {
+  return new Promise((resolve, reject) => {
+    const data = JSON.stringify(body);
+    const opts = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) },
+    };
+    const req = https.request(url, opts, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => resolve(d));
+    });
+    req.on('error', reject);
+    req.write(data);
+    req.end();
+  });
+}
+
 async function solveTurnstile(config) {
-  const sub = JSON.parse(await httpGet(
-    `https://2captcha.com/in.php?key=${config.l2reborn.twoCaptchaKey}&method=turnstile&sitekey=${config.l2reborn.turnstileSitekey}&pageurl=${encodeURIComponent(config.l2reborn.signinUrl)}&json=1`
-  ));
-  if (sub.status !== 1) throw new Error('2captcha failed: ' + JSON.stringify(sub));
-  for (let i = 0; i < 30; i++) {
-    await new Promise(r => setTimeout(r, 5000));
-    const poll = JSON.parse(await httpGet(
-      `https://2captcha.com/res.php?key=${config.l2reborn.twoCaptchaKey}&action=get&id=${sub.request}&json=1`
-    ));
-    if (poll.status === 1) return poll.request;
-    if (poll.request !== 'CAPCHA_NOT_READY') throw new Error('2captcha error: ' + JSON.stringify(poll));
+  const sub = JSON.parse(await httpPost('https://api.2captcha.com/createTask', {
+    clientKey: config.l2reborn.twoCaptchaKey,
+    task: {
+      type: 'TurnstileTaskProxyless',
+      websiteURL: config.l2reborn.signinUrl,
+      websiteKey: config.l2reborn.turnstileSitekey,
+    },
+  }));
+  if (sub.errorId !== 0) throw new Error('2captcha failed: ' + JSON.stringify(sub));
+  const taskId = sub.taskId;
+  for (let i = 0; i < 100; i++) {
+    await new Promise(r => setTimeout(r, 3000));
+    const poll = JSON.parse(await httpPost('https://api.2captcha.com/getTaskResult', {
+      clientKey: config.l2reborn.twoCaptchaKey,
+      taskId,
+    }));
+    if (poll.status === 'ready') return poll.solution.token;
+    if (poll.errorId !== 0) throw new Error('2captcha error: ' + JSON.stringify(poll));
   }
   throw new Error('2captcha timeout');
 }
