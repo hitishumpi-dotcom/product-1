@@ -31,12 +31,20 @@ function getServerEntry() {
 
 function resolveBundledPlaywrightExecutable() {
   const backendRoot = resolveBackendRoot();
-  const candidates = [
-    path.join(backendRoot, 'node_modules', 'playwright-core', '.local-browsers', 'chromium-1208', 'chrome-win', 'chrome.exe'),
-    path.join(backendRoot, 'node_modules', 'playwright-core', '.local-browsers', 'chromium-1208', 'chrome-linux', 'chrome'),
-    path.join(backendRoot, 'node_modules', 'playwright-core', '.local-browsers', 'chromium-1208', 'chrome-mac', 'Chromium.app', 'Contents', 'MacOS', 'Chromium'),
-  ];
-  return candidates.find(candidate => fs.existsSync(candidate));
+  const browsersPath = path.join(backendRoot, 'node_modules', 'playwright-core', '.local-browsers');
+  if (!fs.existsSync(browsersPath)) return undefined;
+  const chromiumDirs = fs.readdirSync(browsersPath).filter(d => d.startsWith('chromium-')).sort().reverse();
+  for (const dir of chromiumDirs) {
+    const candidates = [
+      path.join(browsersPath, dir, 'chrome-win', 'chrome.exe'),
+      path.join(browsersPath, dir, 'chrome-linux64', 'chrome'),
+      path.join(browsersPath, dir, 'chrome-linux', 'chrome'),
+      path.join(browsersPath, dir, 'chrome-mac', 'Chromium.app', 'Contents', 'MacOS', 'Chromium'),
+    ];
+    const found = candidates.find(c => fs.existsSync(c));
+    if (found) return found;
+  }
+  return undefined;
 }
 
 function ensureBackendExists() {

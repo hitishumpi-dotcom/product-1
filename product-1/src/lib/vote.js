@@ -9,17 +9,22 @@ const { notify } = require('./notify');
 
 function resolvePackagedChromiumExecutable() {
   const explicit = process.env.PRODUCT1_PLAYWRIGHT_EXECUTABLE_PATH;
-  if (explicit && fs.existsSync(explicit)) {
-    return explicit;
+  if (explicit && fs.existsSync(explicit)) return explicit;
+
+  const browsersPath = path.resolve(process.cwd(), 'node_modules', 'playwright-core', '.local-browsers');
+  if (!fs.existsSync(browsersPath)) return undefined;
+  const chromiumDirs = fs.readdirSync(browsersPath).filter(d => d.startsWith('chromium-')).sort().reverse();
+  for (const dir of chromiumDirs) {
+    const candidates = [
+      path.join(browsersPath, dir, 'chrome-win', 'chrome.exe'),
+      path.join(browsersPath, dir, 'chrome-linux64', 'chrome'),
+      path.join(browsersPath, dir, 'chrome-linux', 'chrome'),
+      path.join(browsersPath, dir, 'chrome-mac', 'Chromium.app', 'Contents', 'MacOS', 'Chromium'),
+    ];
+    const found = candidates.find(c => fs.existsSync(c));
+    if (found) return found;
   }
-
-  const candidates = [
-    path.resolve(process.cwd(), 'node_modules', 'playwright-core', '.local-browsers', 'chromium-1208', 'chrome-linux', 'chrome'),
-    path.resolve(process.cwd(), 'node_modules', 'playwright-core', '.local-browsers', 'chromium-1208', 'chrome-win', 'chrome.exe'),
-    path.resolve(process.cwd(), 'node_modules', 'playwright-core', '.local-browsers', 'chromium-1208', 'chrome-mac', 'Chromium.app', 'Contents', 'MacOS', 'Chromium'),
-  ];
-
-  return candidates.find(candidate => fs.existsSync(candidate)) || undefined;
+  return undefined;
 }
 
 function httpGet(url) {
